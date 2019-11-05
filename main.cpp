@@ -8,7 +8,7 @@ using namespace std;
 #define MAX_DATA_LENGTH 256
 char portName[] = "\\\\.\\COM3";
 char option[1];
-char address[50]="C:\\Users\\User\\Desktop\\example2.bin";           //預設測試路徑
+char address[50] = "C:\\Users\\User\\Desktop\\example2.bin";           //預設測試路徑
 //Arduino SerialPort object
 SerialPort* arduino;
 
@@ -47,12 +47,12 @@ SerialPort* arduino;
 void SendDataFromFile() {
 	FILE* stream;
 	errno_t err;
-	char serial_return[1], send_data[MAX_DATA_LENGTH];
+	char serial_return[1], send_data[MAX_DATA_LENGTH], address_res[1] = { 'r' };
 	int readResult;
 	int c;
 	int i = 0;
 	bool busy;
-	bool chip_is_full=false;
+	bool chip_is_full = false;
 
 	const char* Address = address;
 	err = fopen_s(&stream, Address, "rb");
@@ -63,7 +63,7 @@ void SendDataFromFile() {
 			for (i = 0; i < MAX_DATA_LENGTH; i++)							//將資料放入arry
 			{
 				c = getc(stream);
-				if (i==0 && c==EOF)
+				if (i == 0 && c == EOF)
 				{
 					goto exist;
 				}
@@ -79,7 +79,7 @@ void SendDataFromFile() {
 				if (readResult == 1)
 				{
 					busy = false;
-					if (serial_return[0]=='1')								//若回傳訊息為'1'表示晶片以寫滿
+					if (serial_return[0] == '1')								//若回傳訊息為'1'表示晶片以寫滿
 						chip_is_full = true;
 					else if (serial_return[0] == 1)
 					{
@@ -92,16 +92,16 @@ void SendDataFromFile() {
 				}
 
 			}
-		
-		} while (c != EOF && chip_is_full==false);
-		exist:	fclose(stream);
-		
+
+		} while (c != EOF && chip_is_full == false);
+	exist:	fclose(stream);
+		arduino->writeSerialPort(address_res, 1);                         //傳送r來reset address
 		printf("finish\n");
 		if (chip_is_full == true)
 		{
 			printf("資料寫滿了!!\n");
 		}
-		
+
 	}
 	else
 	{
@@ -112,19 +112,19 @@ void Read(void)
 {
 	unsigned char byte;
 	char readdata[1];
-	int i=0;
+	int i = 0;
 	//arduino->writeSerialPort(option, 1);
-	
-	while (i<256)
+
+	while (i < 256)
 	{
 		int readResult = arduino->readSerialPort(readdata, sizeof(readdata));
 		byte = readdata[0];
 		Sleep(10);
-		
-		if (readResult==1)
+
+		if (readResult == 1)
 		{
-			if (i % 16 == 0) 
-				printf("\n %02x line ", i );
+			if (i % 16 == 0)
+				printf("\n %02x line ", i);
 			printf("%02x ", byte);
 			i++;
 		}
@@ -152,7 +152,7 @@ void ReadIDorAddress()
 void autoConnect(void)
 {
 	//wait connection
-	while (!arduino->isConnected()) {                       
+	while (!arduino->isConnected()) {
 		Sleep(100);
 		arduino = new SerialPort(portName);
 	}
@@ -171,19 +171,19 @@ int main()
 	while (true)
 	{
 		std::cout << "\n0.Change_address 1.Read 2.ReadID 3.Write 4.Erase 5.Verify" << "\n";
-		std::cin>>option[0];
+		std::cin >> option[0];
 		//change address
-		if (option[0] == '0')                 
+		if (option[0] == '0')
 		{
 			printf("Address= ");
 			ReadIDorAddress();
 			char address[3];
 			std::cout << "輸入想要編輯的位置\n";
-			scanf_s("%x %x %x", address,address+1,address+2);
+			scanf_s("%x %x %x", address, address + 1, address + 2);
 			arduino->writeSerialPort(address, 3);
 		}
 		//read
-		if (option[0]=='1')																	
+		if (option[0] == '1')
 		{
 			printf("address= ");
 			ReadIDorAddress();
@@ -198,8 +198,8 @@ int main()
 		//write
 		else if (option[0] == '3')
 		{
-			std::cout << "請輸入檔案位置:\n";   
-			std::cin >> address;     
+			std::cout << "請輸入檔案位置:\n";
+			std::cin >> address;
 			SendDataFromFile();
 		}
 		//erase
@@ -214,7 +214,7 @@ int main()
 			int readResult;
 			SendDataFromFile();
 		}
-	setvbuf(stdin, NULL, _IOFBF, BUFSIZ);						//清除多餘的輸入
+		setvbuf(stdin, NULL, _IOFBF, BUFSIZ);						//清除多餘的輸入
 	}
 }
 //C:\\Users\\User\\Desktop\\example2.bin
