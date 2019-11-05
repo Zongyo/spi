@@ -188,6 +188,10 @@ void loop() {
           safe=false;
         }
       }
+      else if(select=='r'){
+        for(i=0;i<3;i++)
+          address[i]=Address[i];
+      }
       Serial.write(safe); 
       SLECT_OFF
     }
